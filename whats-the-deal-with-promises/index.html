@@ -6,8 +6,8 @@
 
     <title>What's the Deal With Promises?</title>
 
-    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-    <meta name="author" content="Hakim El Hattab">
+    <meta name="description" content="An introduction to JavaScript promises">
+    <meta name="author" content="Nathan Witt">
 
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -53,11 +53,15 @@
     <section>
         <h2>In the beginning, there was&nbsp;synchronicity</h2>
         <pre><code>
-            doStep1();
+    var myNumber = 0;
 
-            doStep2();
+    myNumber = addFiveTo(myNumber);
 
-            doStep3();
+    myNumber = multiplyByTen(myNumber);
+
+    myNumber = divideByTwo(myNumber);
+
+    console.log(myNumber); // logs 25
         </code></pre>
 
     </section>
@@ -65,42 +69,38 @@
     <section>
         <h2>Enter XMLHttpRequest</h2>
         <h3>His friends call him AJAX</h3>
-        <pre>
-            <code>
-                var xhr = new XMLHttpRequest();
+        <pre><code>
+    var xhr = new XMLHttpRequest();
 
-                xhr.onload = function( data ) {
-                    // handle response
-                };
+    xhr.onload = function( data ) {
+        // handle response
+    };
 
-                xhr.onerror = function( error ) {
-                    // handle error
-                };
+    xhr.onerror = function( error ) {
+        // handle error
+    };
 
-                xhr.open("GET", "http://example.com", true);
-                xhr.send();
-            </code>
-        </pre>
+    xhr.open("GET", "http://example.com", true);
+    xhr.send();
+            </code></pre>
     </section>
 
     <section>
         <section id="fragments">
             <h1>TL;DR</h1>
             <h2 class="fragment">I can has $.ajax() ?</h2>
-            <pre class="fragment">
-                <code>
-                    var xhr = $.ajax({
-                        url: "http://example.com",
-                        type: "GET",
-                        success: function( data ) {
-                            // handle response
-                        },
-                        error: function( error ) {
-                            // handle error
-                        }
-                    });
-                </code>
-            </pre>
+            <pre class="fragment"><code>
+    $.ajax({
+        url: "http://example.com",
+        type: "GET",
+        success: function( data ) {
+            // handle response
+        },
+        error: function( error ) {
+            // handle error
+        }
+    });
+                </code></pre>
         </section>
     </section>
 
@@ -110,37 +110,225 @@
     </section>
 
     <section>
-        <pre>
-            <code style="font-size: 0.6em; line-height: 1em;">
-                $.ajax({
-                    url: "http://example.com",
-                    complete: function() {
-                        console.log("STOP");
+        <h2>Web Developer Rite of Passage</h2>
+        <pre><code>
+    var doIUnderstandAsync = false;
 
-                        $.ajax({
-                            url: "http://example.com",
-                            complete: function() {
-                                console.log("THIS");
+    $.ajax({
+        url: "http://example.com",
+        complete: function( data ) {
+            doIUnderstandAsync = true;
+        }
+    });
 
-                                $.ajax({
-                                    url: "http://example.com",
-                                    complete: function() {
-                                        console.log("MAD");
+    alert("I understand async: " + doIUnderstandAsync);
+        </code></pre>
+        <p class="fragment">Foolish mortal, AJAX doesn't block execution</p>
+    </section>
 
-                                        $.ajax({
-                                            url: "http://example.com",
-                                            complete: function() {
-                                                console.log("MAN!");
-                                            }
-                                        })
-                                    }
-                                })
-                            }
-                        })
-                    }
-                })
-            </code>
-        </pre>
+    <section>
+        <h2>What it looks like to the JavaScript engine</h2>
+        <pre><code>
+    var doIUnderstandAsync = false;
+
+    $.ajax( /*  Didn't read, LOL  */ );
+
+    alert("I understand async: " + false);
+        </code></pre>
+
+        <pre class="fragment"><code>
+    // LATER...
+
+    {
+        url: "http://example.com",
+        complete: function( data ) {
+            /* Hey dude, got your answer right here! */
+            doIUnderstandAsync = true;
+        }
+    }
+        </code></pre>
+    </section>
+
+    <section>
+        <h2><a href="http://callbackhell.com/" target="_blank">Callback Hell</a></h2>
+        <pre><code style="font-size: 0.6em; line-height: 1em;">
+    $.ajax({
+        url: "http://example.com",
+        complete: function() {
+            console.log("STOP");
+
+            $.ajax({
+                url: "http://example.com",
+                complete: function() {
+                    console.log("THIS");
+
+                    $.ajax({
+                        url: "http://example.com",
+                        complete: function() {
+                            console.log("MAD");
+
+                            $.ajax({
+                                url: "http://example.com",
+                                complete: function() {
+                                    console.log("MAN!");
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        }
+    })
+            </code></pre>
+    </section>
+
+    <section>
+        <h2>THAT'S THE PROBLEM</h2>
+        <ul>
+            <li>Difficult to read/debug</li>
+            <li>Nested callbacks are tightly coupled to outer application logic</li>
+            <li>Kiss your closures goodbye</li>
+            <li>Ain't nobody got time for error handling that</li>
+        </ul>
+    </section>
+
+    <section>
+        <h1>Promises to the rescue!</h1>
+        <blockquote class="fragment">&ldquo;A promise represents the eventual result of an asynchronous operation. The primary way of interacting with a promise is through its <code style="color: yellow;">then</code> method, which registers callbacks to receive either a promise’s eventual value or the reason why the promise cannot be fulfilled.&rdquo; &mdash;&nbsp;<a href="https://promisesaplus.com/" target="_blank">Promises/A+</a></blockquote>
+    </section>
+
+    <section>
+        <p><blockquote>&ldquo;I don't have your answer yet, but I <strong style="color: #121212;">promise</strong> to let you know when I do.&rdquo;</blockquote></p>
+        <img src="images/hipsterhacker.jpg" class="fragment" />
+    </section>
+
+    <section>
+        <h2>Common promise methods</h2>
+        <p>
+            <ul style="display: block;">
+                <li class="fragment"><code>.then()</code> <-- Next...</li>
+            </ul>
+        </p>
+        <h3 class="fragment" style="text-align: left;"><a href="https://api.jquery.com/promise/" target="_blank">jQuery</a></h3>
+        <p>
+            <ul style="display: block;">
+                <li class="fragment"><code>.done()</code> <-- Successful request</li>
+                <li class="fragment"><code>.fail()</code> <-- Failed request</li>
+                <li class="fragment"><code>.always()</code> <-- Run no matter the result</li>
+            </ul>
+        </p>
+        <h3 class="fragment" style="text-align: left;"><a href="https://github.com/kriskowal/q/wiki/API-Reference" target="_blank">Q</a></h3>
+        <ul style="display: block;">
+            <li class="fragment"><code>.try()</code> <-- Successful request</li>
+            <li class="fragment"><code>.catch()</code> <-- Failed request</li>
+            <li class="fragment"><code>.finally()</code> <-- Run no matter the result</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Look Familiar?</h2>
+        <br />
+        <table width="100%">
+            <tr>
+                <th style="text-align: center;"><h3>Sync</h3></th>
+                <th style="text-align: center;"><h3>Async</h3></th>
+            </tr>
+            <tr>
+                <td>
+                    <pre><code>
+    try {
+        // ...
+    }
+
+    catch (e) {
+        // ...
+    }
+
+    finally {
+        // ...
+    }
+                    </code></pre>
+                </td>
+                <td>
+                    <pre><code>
+    Q.try( ThenableFunction )
+
+    .catch(function() {
+        // ...
+    })
+
+    .finally(function() {
+        // ...
+    });
+                    </code></pre>
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>.then()</h2>
+        <ul>
+            <li class="fragment">Accepts 3 optional parameters: <br/><code style="color: #999;">successFn [, errorFn [, statusFn ]]</code></li>
+            <li class="fragment">
+                <p>Chainable</p>
+                <pre><code>
+    myPromise.then(successFn, errorFn)
+        .then(successFn, errorFn)
+        .then(successFn, errorFn)
+        .then(function( data ) {
+            // We made it!
+        });
+                </code></pre>
+            </li>
+            <li class="fragment">
+                <p>Mutate data within the pipeline</p>
+                <pre><code>
+    myPromise.then(function( data ) {
+        var objectified = {
+            value: data
+        }
+
+        return objectified;
+    });
+                </code></pre>
+            </li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>A few asynchronous (thenable) methods</h2>
+        <ul>
+            <li><code>$.ajax()</code></li>
+            <li><code>$.animate()</code></li>
+            <li><code>Q.delay()</code></li>
+            <li><code>Q.nfcall()</code></li>
+            <li><code>Q.all()</code></li>
+            <li>
+                <code>
+                    /* Get it together, node */
+                    Promise.denodeify(require('fs').readFile)
+                </code>
+            </li>
+        </ul>
+    </section>
+
+    <section data-background="images/tip-of-the-iceberg-90839.jpg">
+        <!-- http://baldscientist.files.wordpress.com/2013/04/tip-of-the-iceberg-90839.jpg -->
+        <h2>Too many promise libraries</h2>
+        <ul>
+            <li>$.Deferred()</li>
+            <li>Q</li>
+            <li>Bluebird</li>
+            <li>Async</li>
+            <li>Promise (ES6)</li>
+            <li>RSVP</li>
+            <li>JSDeferred</li>
+        </ul>
+    </section>
+
+    <section>
+        <h1>QUESTIONS?</h1>
     </section>
 
 </div>
