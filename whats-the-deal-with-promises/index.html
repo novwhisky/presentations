@@ -42,25 +42,106 @@
 
 <!-- Any section element inside of this container is displayed as a slide -->
 <div class="slides">
-<section>
-    <h1>What's the Deal With Promises?</h1>
-    <h3>An introduction</h3>
-    <p>
-        <small>Created by <a href="http://wi.tt">Nathan Witt</a> / <a href="http://twitter.com/wittnl">@wittnl</a></small>
-    </p>
-</section>
+    <section>
+        <h1 style="text-transform: uppercase;">What's the Deal With Promises?</h1>
+        <h3>An introduction</h3>
+        <p>
+            <small>Created by <a href="http://wi.tt">Nathan Witt</a> / <a href="http://twitter.com/wittnl">@wittnl</a></small>
+        </p>
+    </section>
 
-<section>
-    <h2>In the Beginning, There <br>Was Synchronicity</h2>
-    <pre><code>
-        doSomething();
+    <section>
+        <h2>In the beginning, there was&nbsp;synchronicity</h2>
+        <pre><code>
+            doStep1();
 
-        thenDoSomethingElse();
+            doStep2();
 
-        finallyDoThis();
-    </code></pre>
+            doStep3();
+        </code></pre>
 
-</section>
+    </section>
+
+    <section>
+        <h2>Enter XMLHttpRequest</h2>
+        <h3>His friends call him AJAX</h3>
+        <pre>
+            <code>
+                var xhr = new XMLHttpRequest();
+
+                xhr.onload = function( data ) {
+                    // handle response
+                };
+
+                xhr.onerror = function( error ) {
+                    // handle error
+                };
+
+                xhr.open("GET", "http://example.com", true);
+                xhr.send();
+            </code>
+        </pre>
+    </section>
+
+    <section>
+        <section id="fragments">
+            <h1>TL;DR</h1>
+            <h2 class="fragment">I can has $.ajax() ?</h2>
+            <pre class="fragment">
+                <code>
+                    var xhr = $.ajax({
+                        url: "http://example.com",
+                        type: "GET",
+                        success: function( data ) {
+                            // handle response
+                        },
+                        error: function( error ) {
+                            // handle error
+                        }
+                    });
+                </code>
+            </pre>
+        </section>
+    </section>
+
+    <section>
+        <h2>Not so hard</h2>
+        <h3>What's the problem?</h3>
+    </section>
+
+    <section>
+        <pre>
+            <code style="font-size: 0.6em; line-height: 1em;">
+                $.ajax({
+                    url: "http://example.com",
+                    complete: function() {
+                        console.log("STOP");
+
+                        $.ajax({
+                            url: "http://example.com",
+                            complete: function() {
+                                console.log("THIS");
+
+                                $.ajax({
+                                    url: "http://example.com",
+                                    complete: function() {
+                                        console.log("MAD");
+
+                                        $.ajax({
+                                            url: "http://example.com",
+                                            complete: function() {
+                                                console.log("MAN!");
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+            </code>
+        </pre>
+    </section>
 
 </div>
 
@@ -78,6 +159,9 @@
         progress: true,
         history: true,
         center: true,
+
+//        width: 1920,
+//        height: 1280,
 
         theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
         transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
